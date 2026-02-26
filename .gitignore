@@ -1,0 +1,52 @@
+# Unity generated
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+UserSettings/
+Bin/
+
+*.zip
+*.exe
+*.apk
+*.unitypackage
+
+
+
+# Asset meta data should only be ignored when the corresponding asset is ignored
+!/[Aa]ssets/**/*.meta
+
+# Visual Studio / Rider / IDE
+.vs/
+.idea/
+*.sln
+*.csproj
+*.unityproj
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Unity cache
+*.tmp
+*.bak
+*.swp
+*.orig
+
+# Crash reports
+sysinfo.txt
+
+# Rider plugin
+Assets/Plugins/Editor/JetBrains*

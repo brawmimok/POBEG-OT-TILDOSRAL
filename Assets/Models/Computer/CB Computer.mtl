@@ -1,0 +1,28 @@
+newmtl Meshesmonitor1Mtl
+Material Color
+Ka 1 1 1
+Kd 1 1 1
+Ks 0.4 0.4 0.4 
+
+d 1
+
+Ns 9
+
+map_Ka Meshesmonitor1Tex.png
+map_Kd Meshesmonitor1Tex.png
+map_d Meshesmonitor1Tex.png
+
+newmtl Mesheskeyboard1Mtl
+Material Color
+Ka 1 1 1
+Kd 1 1 1
+Ks 0.4 0.4 0.4 
+
+d 1
+
+Ns 9
+
+map_Ka Mesheskeyboard1Tex.png
+map_Kd Mesheskeyboard1Tex.png
+map_d Mesheskeyboard1Tex.png
+

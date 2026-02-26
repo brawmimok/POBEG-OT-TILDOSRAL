@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc51acbd42c6e484d8c6e897b8341fed, type: 3}
+  m_Name: LightZoneDoorInfo
+  m_EditorClassIdentifier: Assembly-CSharp::DoorInfo
+  openOffset: {x: -0.95, y: 0, z: 0}
+  moveDuration: 1.25
+  openSounds:
+  - {fileID: 8300000, guid: e4735f50bd0a32e4da7dce3b94fb1d22, type: 3}
+  - {fileID: 8300000, guid: a839b4c1dab4c1848b6df4adeb9b14f2, type: 3}
+  - {fileID: 8300000, guid: 8ca96d5b0243e6f458a318c857793e0f, type: 3}
+  closeSounds:
+  - {fileID: 8300000, guid: dcd7c84ef5614c7479e675788e264179, type: 3}
+  - {fileID: 8300000, guid: 18e609057866a85408a1e2fe24132e6f, type: 3}
+  - {fileID: 8300000, guid: 20fc800a0aaceb440bf031a358a1e354, type: 3}

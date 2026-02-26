@@ -1,0 +1,42 @@
+newmtl Plague1Mtl
+Material Color
+Ka 1 1 1
+Kd 1 1 1
+Ks 0.4 0.4 0.4 
+
+d 1
+
+Ns 9
+
+map_Ka Plague1Tex.png
+map_Kd Plague1Tex.png
+map_d Plague1Tex.png
+
+newmtl Server1Mtl
+Material Color
+Ka 1 1 1
+Kd 1 1 1
+Ks 0.4 0.4 0.4 
+
+d 1
+
+Ns 9
+
+map_Ka Server1Tex.png
+map_Kd Server1Tex.png
+map_d Server1Tex.png
+
+newmtl Metal1Mtl
+Material Color
+Ka 1 1 1
+Kd 1 1 1
+Ks 0.4 0.4 0.4 
+
+d 1
+
+Ns 9
+
+map_Ka Metal1Tex.png
+map_Kd Metal1Tex.png
+map_d Metal1Tex.png
+
