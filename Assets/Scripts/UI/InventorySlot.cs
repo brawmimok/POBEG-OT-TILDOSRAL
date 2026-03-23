@@ -1,17 +1,14 @@
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine;
+using TMPro;
 
-[RequireComponent(typeof(Image))]
-public class InventorySlot : MonoBehaviour, IPointerClickHandler
+public class InventorySlot : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
 {
-    public int slotIndex;
-    private Image icon;
-
-    private void Awake()
-    {
-        icon = GetComponent<Image>();
-    }
+    [SerializeField] private int slotIndex;
+    public Image redBorder;
+    public Image itemImage;
+    public TextMeshProUGUI itemName;
     public void OnPointerClick(PointerEventData eventData)
     {
         var item = MainMechanics.instance.player.inventory[slotIndex];
@@ -24,7 +21,22 @@ public class InventorySlot : MonoBehaviour, IPointerClickHandler
         else if (eventData.button == PointerEventData.InputButton.Right)
         {
             item.DropItem(MainMechanics.instance.player);
-            icon.sprite = GameUIManager.instance.nothingSprite;
+            itemImage.sprite = GameUIManager.instance.nothingSprite;
         }
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        Debug.Log($"Slot {slotIndex}: redBorder={redBorder}, itemName={itemName}, itemImage={itemImage}");
+        var item = MainMechanics.instance.player.inventory[slotIndex];
+        if (item == null) return;
+        redBorder.enabled = true;
+        itemName.text = item.itemName;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        redBorder.enabled = false;
+        itemName.text = "";
     }
 }

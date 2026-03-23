@@ -1,18 +1,20 @@
 using System;
 using TMPro;
 using UnityEngine;
+using System.Collections;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameUIManager : MonoBehaviour
 {
     public static GameUIManager instance;
+
     [Header("Menu & Death System")]
     [SerializeField] private CanvasGroup pauseMenuUI;
     [SerializeField] private CanvasGroup deathMenuUI;
     [SerializeField] private CanvasGroup inventoryPanel;
     [SerializeField] private GameObject preDeathPanel;
-    [SerializeField] private Image[] inventoryCells;
+    [SerializeField] private InventorySlot[] inventoryCells;
     [SerializeField] private Image displayItem;
 
     public Sprite nothingSprite;
@@ -27,18 +29,22 @@ public class GameUIManager : MonoBehaviour
     private float timerMax = 5f;
     private bool timerWorking = false;
 
+    [Header("Quest Panel")]
+    [SerializeField] private GameObject questPanel;
+    [SerializeField] private TMP_Text questText;
+    [SerializeField] private Animator questAnimator;
+
+    private Coroutine _questDisableCoroutine;
+
     private void Awake()
     {
         if (instance == null)
-        {
             instance = this;
-        }
     }
+
     private void Update()
     {
-        //
         // Text Manager
-        //
         if (timerWorking)
         {
             if (timer >= timerMax)
@@ -52,9 +58,8 @@ public class GameUIManager : MonoBehaviour
             timer += Time.deltaTime;
             hudText.alpha = 1 - (timer / timerMax);
         }
-        //
-        // Player Ui
-        //
+
+        // Player UI
         if (MainMechanics.instance.player.alive)
         {
             if (Input.GetKeyDown(KeyCode.Escape))
@@ -70,17 +75,43 @@ public class GameUIManager : MonoBehaviour
                 else if (_isInventoryOpen) CloseInventory();
                 else OpenInventory();
             }
+            else if (Input.GetMouseButtonDown(1) && displayItem.gameObject.activeInHierarchy)
+                UndisplayItemOnScreen();
         }
         else
         {
             if (preDeathPanel != null)
-            {
                 preDeathPanel.SetActive(true);
-            }
             Invoke(nameof(ShowDeathMenu), 5f);
         }
     }
-    // Game events
+
+    // Показать квест — сиська онлайн
+    public void ShowQuest(string text)
+    {
+        if (_questDisableCoroutine != null)
+        {
+            StopCoroutine(_questDisableCoroutine);
+            _questDisableCoroutine = null;
+        }
+
+        questText.text = text;
+        questPanel.SetActive(true);
+        questAnimator.SetTrigger("Show");
+    }
+
+    public void HideQuest()
+    {
+        questAnimator.SetTrigger("Hide");
+        _questDisableCoroutine = StartCoroutine(DisableQuestAfterAnimation());
+    }
+
+    private IEnumerator DisableQuestAfterAnimation()
+    {
+        yield return new WaitForSeconds(questAnimator.GetCurrentAnimatorStateInfo(0).length);
+        questPanel.SetActive(false);
+    }
+
     private void PauseGame()
     {
         Cursor.lockState = CursorLockMode.None;
@@ -104,7 +135,7 @@ public class GameUIManager : MonoBehaviour
         Time.timeScale = 1f;
         _isPaused = false;
     }
-    // Death menu
+
     private void ShowDeathMenu()
     {
         Cursor.lockState = CursorLockMode.None;
@@ -114,8 +145,7 @@ public class GameUIManager : MonoBehaviour
         deathMenuUI.blocksRaycasts = true;
         Time.timeScale = 0f;
     }
-    
-    // Inventory
+
     private void OpenInventory()
     {
         Cursor.lockState = CursorLockMode.None;
@@ -127,19 +157,19 @@ public class GameUIManager : MonoBehaviour
         Time.timeScale = 0f;
         _isInventoryOpen = true;
         for (int i = 0; i < MainMechanics.instance.player.inventory.Length; i++)
-        {
             if (MainMechanics.instance.player.inventory[i] != null)
-            {
-                inventoryCells[i].sprite = MainMechanics.instance.player.inventory[i].icon;
-            }
+                inventoryCells[i].itemImage.sprite = MainMechanics.instance.player.inventory[i].icon;
             else
-            {
-                inventoryCells[i].sprite = nothingSprite;
-            }
-        }
+                inventoryCells[i].itemImage.sprite = nothingSprite;
     }
+
     public void CloseInventory()
     {
+        foreach (var item in inventoryCells)
+        {
+            item.redBorder.enabled = false;
+            item.itemName.text = "";
+        }
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
         MainMechanics.instance.player.canMove = true;
@@ -149,25 +179,27 @@ public class GameUIManager : MonoBehaviour
         Time.timeScale = 1f;
         _isInventoryOpen = false;
     }
-    // Item on screen display
+
     public void DisplayItemOnScreen(Sprite displaySprite)
     {
-        if (_isInventoryOpen) CloseInventory();
         displayItem.gameObject.SetActive(true);
         displayItem.sprite = displaySprite;
     }
-    private void UndisplayItemOnScreen()
+
+    public void UndisplayItemOnScreen()
     {
         displayItem.gameObject.SetActive(false);
     }
-    // Text display
-    public void ShowText(string text)
+
+    public void ShowText(string text, float timerMax = 5f)
     {
         timerWorking = true;
         timer = 0f;
+        this.timerMax = timerMax;
         hudText.alpha = 1f;
         hudText.text = text;
     }
+
     public void HideText()
     {
         timerWorking = false;
@@ -175,7 +207,7 @@ public class GameUIManager : MonoBehaviour
         hudText.alpha = 1f;
         hudText.text = "";
     }
-    //Не удалять, а то всё короче
+
     public void QuitToMainMenu()
     {
         SceneManager.LoadSceneAsync("MainMenu");

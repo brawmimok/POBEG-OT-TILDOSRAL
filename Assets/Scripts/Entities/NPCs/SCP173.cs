@@ -22,10 +22,11 @@ using UnityEngine.AI;
 using Unity.AI.Navigation;
 
 [RequireComponent(typeof(NavMeshAgent))]
-public class SCP173 : MonoBehaviour
+public class SCP173 : PepusBehaviour
 {
     [Header("Components")]
     [SerializeField] private Collider ownCollider;
+    [SerializeField] private Collider ownMeshCollider;
     [SerializeField] private Collider killZoneCollider;
     private NavMeshAgent agent; // Тут очень много всего нужного
 
@@ -38,7 +39,7 @@ public class SCP173 : MonoBehaviour
     [SerializeField] private int randomMax = 8;
 
     [Header("Door Limit")]
-    [SerializeField] private int maxDoorsCanOpen = 300;
+    [SerializeField] private int maxDoorsCanOpen = 0;
 
     [Header("Sound Cooldown")]
     [SerializeField] private float soundCooldownTime = 5f;
@@ -49,6 +50,7 @@ public class SCP173 : MonoBehaviour
     private Door traversingDoor;
     private bool traversingLink;
     private Vector3 traversingLinkEndPos;
+    private Vector3 traversingLinkStartPos;
 
     [Space]
     [Header("Disappear")]
@@ -56,13 +58,21 @@ public class SCP173 : MonoBehaviour
     private float disappearTimer;
     [SerializeField] private float disappearTimerMax = 35f;
 
+    private const int areaMaskEverything = -1;
+    private const int areaMaskAfterLimit = 7;
+    protected override void Awake()
+    {
+        base.Awake();
+    }
     private void Start()
     {
-        maxDoorsCanOpen = Random.Range(0, randomMax + 1);
         disappearTimerWorking = true;
         agent = GetComponent<NavMeshAgent>();
         agent.updateRotation = false;
         agent.updatePosition = false;
+        maxDoorsCanOpen = Random.Range(0, randomMax + 1);
+        print(agent.areaMask);
+
     }
 
     private void Update()
@@ -83,7 +93,7 @@ public class SCP173 : MonoBehaviour
             agent.isStopped = false;
             Vector3 _vec = transform.position;
             bool playerIsWatchingPast = playerIsWatching;
-            playerIsWatching = targetPlayer.PlayerIsWatching(ownCollider);
+            playerIsWatching = targetPlayer.PlayerIsWatching(ownCollider, ownMeshCollider);
             playerIsWatching &= !targetPlayer.isBlinking;
 
             if ((playerIsWatching && !noticedByPlayer) ||
@@ -103,9 +113,7 @@ public class SCP173 : MonoBehaviour
             if (noticedByPlayer)
             {
                 if (playerIsWatching)
-                {
                     agent.velocity = Vector3.zero;
-                }
                 agent.isStopped = playerIsWatching;
                 killZoneCollider.enabled = !playerIsWatching; // Киллзона
 
@@ -116,6 +124,7 @@ public class SCP173 : MonoBehaviour
                     {
                         if (agent.currentOffMeshLinkData.owner != null)
                             traversingDoor = ((NavMeshLink)agent.currentOffMeshLinkData.owner).gameObject.GetComponent<Door>();
+                        traversingLinkStartPos = agent.currentOffMeshLinkData.startPos + Vector3.up * agent.baseOffset;
                         traversingLinkEndPos = agent.currentOffMeshLinkData.endPos + Vector3.up * agent.baseOffset;
                         traversingLink = true;
                     }
@@ -123,20 +132,30 @@ public class SCP173 : MonoBehaviour
                     {
                         if (traversingDoor.isMoving || !traversingDoor.isDoorOpened)
                         {
-                            if (!playerIsWatching && maxDoorsCanOpen > 0 && !traversingDoor.isMoving)
-                            {
-                                traversingDoor.OpenDoor();
-                                maxDoorsCanOpen--;
-                            }
+                            if (!playerIsWatching && !traversingDoor.isMoving)
+                                if (maxDoorsCanOpen > 0)
+                                {
+                                    traversingDoor.OpenDoor();
+                                    maxDoorsCanOpen--;
+                                }
+                                else if (!playerIsWatching)
+                                {
+                                    Vector3 vct3 = Vector3.Distance(transform.position, traversingLinkStartPos) < Vector3.Distance(transform.position, traversingLinkEndPos)
+                                        ? traversingLinkStartPos : traversingLinkEndPos;
+                                    print(Vector3.Distance(transform.position, traversingLinkStartPos) < Vector3.Distance(transform.position, traversingLinkEndPos) ? "StartPos" : "EndPos");
+                                    agent.Warp(vct3);
+                                    agent.CompleteOffMeshLink();
+                                    agent.areaMask = areaMaskAfterLimit;
+                                    traversingLink = false;
+                                    traversingDoor = null;
+                                }
                         }
                         else
                         {
                             if (Vector3.Distance(transform.position, traversingLinkEndPos) > 0.1f)
                             {
                                 if (!agent.isStopped)
-                                {
                                     transform.position = Vector3.MoveTowards(transform.position, traversingLinkEndPos, agent.speed * Time.deltaTime);
-                                }
                             }
                             else
                             {
@@ -158,7 +177,6 @@ public class SCP173 : MonoBehaviour
                     }
                 }
             }
-
         }
         // Таймер
         if (disappearTimerWorking)
@@ -194,5 +212,64 @@ public class SCP173 : MonoBehaviour
             noticedByPlayer = false;
             targetPlayer = null;
         }
+    }
+    public class SCP173SaveData : SaveData
+    {
+        public float x;
+        public float y;
+        public float z;
+
+        public float wRot;
+        public float xRot;
+        public float yRot;
+        public float zRot;
+
+        public int maxDoorsOpen;
+        public bool noticedByPlayer;
+        public ulong targetPlayerId;
+
+        public bool disappearTimerWorking;
+        public float disappearTimer;
+    }
+    public override void OnSave()
+    {
+        saveData = new SCP173SaveData()
+        {
+            x = transform.position.x,
+            y = transform.position.y,
+            z = transform.position.z,
+
+            wRot = transform.rotation.w,
+            xRot = transform.rotation.x,
+            yRot = transform.rotation.y,
+            zRot = transform.rotation.z,
+
+            maxDoorsOpen = maxDoorsCanOpen,
+            noticedByPlayer = noticedByPlayer,
+            targetPlayerId = targetPlayer == null ? 0 : targetPlayer.Id,
+
+            disappearTimerWorking = disappearTimerWorking,
+            disappearTimer = disappearTimer,
+
+            active = gameObject.activeInHierarchy,
+            id = Id
+        };
+    }
+    public override void OnLoad(SaveData saveData)
+    {
+        base.OnLoad(saveData);
+        SCP173SaveData saveData1 = (SCP173SaveData)saveData;
+
+        transform.SetPositionAndRotation(
+            new Vector3(saveData1.x, saveData1.y, saveData1.z),
+            new Quaternion(saveData1.xRot, saveData1.yRot, saveData1.zRot, saveData1.wRot));
+        
+        maxDoorsCanOpen = saveData1.maxDoorsOpen;
+        noticedByPlayer = saveData1.noticedByPlayer;
+        var targetPlayer1 = SaveManager.instance.behaviours[saveData1.targetPlayerId];
+        targetPlayer = targetPlayer1 == null ? null : (Player)targetPlayer1;
+        
+        disappearTimerWorking = saveData1.disappearTimerWorking;
+        disappearTimer = saveData1.disappearTimer;
     }
 }

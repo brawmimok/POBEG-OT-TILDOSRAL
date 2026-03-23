@@ -1,0 +1,87 @@
+# File produced by Open Asset Import Library (http://www.assimp.sf.net)
+# (assimp v4.1.0)
+
+newmtl metal
+illum 1
+map_Kd metal.jpg
+
+newmtl dirtymetal
+illum 1
+map_Kd dirtymetal.jpg
+
+newmtl white
+illum 1
+map_Kd white.jpg
+
+newmtl scplogo
+illum 1
+map_Kd scplogo.jpg
+
+newmtl whitewall
+illum 1
+map_Kd whitewall.jpg
+
+newmtl metalpanels2
+illum 1
+map_Kd metalpanels2.jpg
+
+newmtl cloth
+illum 1
+map_Kd cloth.jpg
+
+newmtl door01
+illum 1
+map_Kd door01.jpg
+
+newmtl papertexture
+illum 1
+map_Kd papertexture.jpg
+
+newmtl red
+illum 1
+map_Kd red.jpg
+
+newmtl controlpanel
+illum 1
+map_Kd controlpanel.jpg
+
+newmtl tilefloor
+illum 1
+map_Kd tilefloor.jpg
+
+newmtl glass
+illum 1
+map_Kd glass.jpg
+
+newmtl concretefloor
+illum 1
+map_Kd concretefloor.jpg
+
+newmtl vent
+illum 1
+map_Kd vent.jpg
+
+newmtl misc
+illum 1
+map_Kd misc.jpg
+
+newmtl tooltextures/invisible_collision
+illum 1
+map_Kd tooltextures/invisible_collision.png
+
+newmtl metal3
+illum 1
+map_Kd metal3.jpg
+
+newmtl label173
+illum 1
+map_Kd label173.jpg
+
+newmtl ceiling
+illum 1
+map_Kd ceiling.jpg
+
+newmtl circuit
+illum 1
+map_Kd circuit.jpg
+

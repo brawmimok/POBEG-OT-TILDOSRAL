@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(CharacterController), typeof(AudioSource))]
-public class Player : MonoBehaviour
+public class Player : PepusBehaviour
 {
     [Header("MoveController")]
     //[SerializeField] private float jumpPower = 7f;
-    [SerializeField] private Camera playerCamera;
+    public Camera playerCamera;
+    public Canvas canvas;
     [SerializeField] private float walkSpeed = 3f;
     [SerializeField] private float gravity = 9.8f;
 
@@ -81,7 +83,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float timeForBlinkReturn = 10f;
     [SerializeField] private float blinkTime = 0.3f;
     [SerializeField] private KeyCode blinkKeyCode = KeyCode.Space;
-    [System.NonSerialized] public bool isBlinking;
+    [NonSerialized] public bool isBlinking;
     private float blinkTimer;
     private float inBlinkTimer;
     private float blinkStrip;
@@ -93,8 +95,14 @@ public class Player : MonoBehaviour
     [Space]
     [Header("Interacting")]
     public Dictionary<Collider, Usable> useList = new();
-    public Usable object_to_use;
     public Transform useSourceDistance;
+    [NonSerialized] public Usable object_to_use;
+
+    [SerializeField] private Image handIcon;
+    private Vector2 minHandIconOnScreenCord;
+    private Vector2 maxHandIconOnScreenCord;
+
+    [SerializeField] private float handInvisCanvasIconScale = 3f;
 
     [Space]
     [Header("Inventory")]
@@ -103,16 +111,16 @@ public class Player : MonoBehaviour
 
     [Space]
     [Header("Other")]
-    public bool inPause = false;
+    [NonSerialized] public bool inPause = false;
     public AudioClip DeathSound;
-    [SerializeField] private GameObject handIconInstance;
     [NonSerialized] public CharacterController characterController;
     [NonSerialized] public bool alive = true;
 
     //[SerializeField] private GameObject playerModel;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         characterController = GetComponent<CharacterController>();
     }
     private void Start()
@@ -122,7 +130,9 @@ public class Player : MonoBehaviour
 #endif
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        // SNR
+        minHandIconOnScreenCord = handIcon.rectTransform.sizeDelta * handInvisCanvasIconScale;
+        maxHandIconOnScreenCord = new(Screen.width - handIcon.rectTransform.sizeDelta.x * handInvisCanvasIconScale, Screen.height - handIcon.rectTransform.sizeDelta.y * handInvisCanvasIconScale);
+        // SNR 
         curStamina = timeForFullStamina;
         staminaStrip = timeForFullStamina / staminaStrips.Length;
         // BNR
@@ -157,13 +167,9 @@ public class Player : MonoBehaviour
             {
                 noclipUI.text = string.Format(sourceNoclipText, noclipSpeedMultiplier.ToString("F2"));
                 if (Input.GetKey(KeyCode.LeftShift) && Input.GetKeyDown(KeyCode.H))
-                {
                     noclipUI.gameObject.SetActive(!noclipUI.gameObject.activeSelf);
-                }
                 else if (Input.GetKeyDown(KeyCode.H))
-                {
                     allUI.SetActive(!allUI.activeSelf);
-                }
                 noclipSpeedMultiplier += Input.GetAxis("Mouse ScrollWheel") * 2f;
                 transform.position += Time.deltaTime * noclipSpeedMultiplier *
                     Vector3.ClampMagnitude(playerCamera.transform.right * Input.GetAxis("Horizontal") +
@@ -191,9 +197,7 @@ public class Player : MonoBehaviour
                         currentSpeed = walkSpeed * crouchSpeedMultiplier;
                     }
                     else if (isRunning && !staminaEnded)
-                    {
                         currentSpeed = walkSpeed * runSpeedMultiplier;
-                    }
                     else
                     {
                         characterController.height = defaultHeight;
@@ -298,13 +302,9 @@ public class Player : MonoBehaviour
             else
             {
                 if (curStamina > timeForFullStamina)
-                {
                     curStamina = timeForFullStamina;
-                }
                 if (curStamina < timeForFullStamina)
-                {
                     curStamina += Time.deltaTime;
-                }
             }
         }
         else
@@ -318,9 +318,7 @@ public class Player : MonoBehaviour
         }
         curStaminaStrips = Mathf.Ceil(curStamina / staminaStrip);
         for (int i = staminaStrips.Length; i > 0; i--)
-        {
             staminaStrips[i - 1].SetActive(i <= curStaminaStrips);
-        }
         //
         //                               МАТЕРИНСКАЯ МОРГАЛКА ЗИГ
         //
@@ -333,9 +331,7 @@ public class Player : MonoBehaviour
                 isBlinking = true;
             }
             for (var i = blinkStrips.Length; i > 0; i--)
-            {
                 blinkStrips[i - 1].SetActive(i <= Mathf.Ceil(blinkTimer / blinkStrip));
-            }
         }
         else
         {
@@ -344,9 +340,7 @@ public class Player : MonoBehaviour
             if (inBlinkTimer >= blinkTime)
             {
                 if (Input.GetKey(blinkKeyCode))
-                {
                     isBlinking = true;
-                }
                 else
                 {
                     inBlinkTimer = 0f;
@@ -357,14 +351,23 @@ public class Player : MonoBehaviour
             }
             else inBlinkTimer += Time.deltaTime;
             for (var i = blinkStrips.Length; i > 0; i--)
-            {
                 blinkStrips[i - 1].SetActive(false);
-            }
+        }
+        if (Input.GetKeyDown(KeyCode.F5))
+        {
+            GameUIManager.instance.ShowText("Игра сохранена", 3f);
+            SaveManager.instance.Save();
+        }
+        if (Input.GetKeyDown(KeyCode.F7))
+        {
+            GameUIManager.instance.ShowText("Игра Загружена", 3f);
+            SaveManager.instance.LoadSave();
         }
     }
     #region USING_CODE
 
-    public LayerMask layerMask;
+    [SerializeField] private LayerMask layerMask;
+    [SerializeField] private LayerMask layerMaskNpcRaycast;
     private void Use()
     {
         if (object_to_use != null)
@@ -380,7 +383,7 @@ public class Player : MonoBehaviour
             float distance = float.MaxValue;
             float dist;
             object_to_use = null;
-            handIconInstance.SetActive(false);
+            handIcon.gameObject.SetActive(false);
             foreach (var entity in useList)
             {
                 if (Physics.Raycast(playerCamera.transform.position, entity.Key.ClosestPoint(playerCamera.transform.position) - playerCamera.transform.position, out var hitInfo, float.MaxValue, layerMask.value))
@@ -390,11 +393,17 @@ public class Player : MonoBehaviour
                     {
                         if (hitInfo.collider == entity.Key)
                         {
-                            object_to_use = entity.Value;
                             distance = dist;
-                            handIconInstance.transform.position = object_to_use.transform.position;
-                            handIconInstance.transform.rotation = Quaternion.LookRotation(playerCamera.transform.position - handIconInstance.transform.position);
-                            handIconInstance.SetActive(true);
+                            object_to_use = entity.Value;
+
+                            var screenPos3 = playerCamera.WorldToScreenPoint(entity.Key.transform.position);
+                            var screenPos = (Vector2)screenPos3;
+                            if (screenPos3.z < 0f) screenPos = -screenPos;
+
+                            screenPos = screenPos.Clamp(minHandIconOnScreenCord, maxHandIconOnScreenCord);
+
+                            handIcon.rectTransform.position = screenPos;
+                            handIcon.gameObject.SetActive(true);
                         }
                     }
                 }
@@ -413,26 +422,32 @@ public class Player : MonoBehaviour
                     if (hitInfo.collider == entity.Key)
                     {
                         object_to_use = entity.Value;
-                        handIconInstance.transform.position = object_to_use.transform.position;
-                        handIconInstance.transform.rotation = Quaternion.LookRotation(playerCamera.transform.position - handIconInstance.transform.position);
-                        handIconInstance.SetActive(true);
+
+                        var screenPos3 = playerCamera.WorldToScreenPoint(entity.Key.transform.position);
+                        var screenPos = (Vector2)screenPos3;
+                        if (screenPos3.z < 0f) screenPos = -screenPos;
+
+                        screenPos = screenPos.Clamp(minHandIconOnScreenCord, maxHandIconOnScreenCord);
+
+                        handIcon.rectTransform.position = screenPos;
+                        handIcon.gameObject.SetActive(true);
                     }
                     else
                     {
-                        handIconInstance.SetActive(false);
+                        handIcon.gameObject.SetActive(false);
                         object_to_use = null;
                     }
                 }
                 else
                 {
-                    handIconInstance.SetActive(false);
+                    handIcon.gameObject.SetActive(false);
                     object_to_use = null;
                 }
             }
         }
         else
         {
-            handIconInstance.SetActive(false);
+            handIcon.gameObject.SetActive(false);
             object_to_use = null;
         }
     }
@@ -454,20 +469,20 @@ public class Player : MonoBehaviour
             MainMechanics.instance.sfxAudio.PlayOneShot(DeathSound);
         }
     }
-    public void TeleportTo(Transform pos)
+    public void TeleportTo(Transform target)
     {
         characterController.enabled = false;
-        transform.position = pos.position;
+        transform.position = target.position;
         characterController.enabled = true;
     }
 
 
 
-    public bool PlayerIsWatching(Collider collider)
+    public bool PlayerIsWatching(Collider collider, Collider meshcollider)
     {
         Plane[] planes = GeometryUtility.CalculateFrustumPlanes(playerCamera);
+        if (!GeometryUtility.TestPlanesAABB(planes, meshcollider.bounds)) return false;
         Bounds b = collider.bounds;
-        if (!GeometryUtility.TestPlanesAABB(planes, b)) return false;
         Vector3[] pointsToCheck = {
             b.center,
             // --- Углы (8 точек) ---
@@ -506,13 +521,112 @@ public class Player : MonoBehaviour
             Vector3.Lerp(b.center, new (b.min.x, b.max.y, b.max.z), 0.75f),
             Vector3.Lerp(b.center, new (b.max.x, b.max.y, b.max.z), 0.75f)
         };
+        if (b.Contains(playerCamera.transform.position))
+            return true;
+        //var a = false;
+        //foreach (Vector3 point in pointsToCheck)
+        //    if (Physics.Linecast(playerCamera.transform.position, point, out RaycastHit hit, layerMask.value))
+        //        if (hit.collider == collider)
+        //        {
+        //            Debug.DrawLine(point, point + Vector3.up * 0.2f, Color.green);
+        //            a = true;
+        //        }
+        //        else
+        //            Debug.DrawLine(point, point + Vector3.up * 0.2f, Color.red);
+        //return a;
         foreach (Vector3 point in pointsToCheck)
-        {
-            if (Physics.Linecast(playerCamera.transform.position, point, out RaycastHit hit, layerMask.value))
-            {
-                if (hit.collider == collider) return true;
-            }
-        }
+            if (Physics.Linecast(playerCamera.transform.position, point, out RaycastHit hit, layerMaskNpcRaycast.value))
+                if (hit.collider == collider)
+                    return true;
         return false;
+    }
+    // Сохранения
+    [Serializable]
+    public class InventorySaveDataWrap
+    {
+        public ulong[] inv_item_id;
+        //public InventorySaveDataWrap(int[] arr)
+        //{
+        //    inv_item_id = new int[arr.Length];
+        //    for (int i = 0; i < arr.Length; i++)
+        //        inv_item_id[i] = arr[i];
+        //}
+        public InventorySaveDataWrap(InventoryItem[] arr)
+        {
+            inv_item_id = new ulong[arr.Length];
+            for (int i = 0; i < arr.Length; i++)
+                inv_item_id[i] = arr[i] == null ? 0 : arr[i].Id;
+        }
+    }
+    [Serializable]
+    public class PlayerSaveData : SaveData
+    {
+        public float x, y, z;
+
+        public float wRot, xRot, yRot, zRot;
+
+        public InventorySaveDataWrap inventory;
+
+        public float currentStamina;
+        public float staminaTimer;
+        public bool staminaEnded;
+
+        public float blinkTimer;
+        public float inBlinkTimer;
+        public float blinkStrip;
+        public bool isBlinking;
+    }
+    public override void OnSave()
+    {
+        saveData = new PlayerSaveData()
+        {
+            x = transform.position.x,
+            y = transform.position.y,
+            z = transform.position.z,
+
+            wRot = transform.rotation.w,
+            xRot = transform.rotation.x,
+            yRot = transform.rotation.y,
+            zRot = transform.rotation.z,
+
+            inventory = new(inventory),
+
+            currentStamina = curStamina,
+            staminaTimer = staminaTimer,
+            staminaEnded = staminaEnded,
+
+            blinkTimer = blinkTimer,
+            blinkStrip = blinkStrip,
+            isBlinking = isBlinking,
+            inBlinkTimer = inBlinkTimer,
+
+            active = gameObject.activeInHierarchy,
+            id = Id
+        };
+    }
+    public override void OnLoad(SaveData saveData)
+    {
+        base.OnLoad(saveData);
+        PlayerSaveData saveData1 = (PlayerSaveData)saveData;
+
+        GameUIManager.instance.UndisplayItemOnScreen();
+
+        characterController.enabled = false;
+        transform.SetPositionAndRotation(
+            new Vector3(saveData1.x, saveData1.y, saveData1.z),
+            new Quaternion(saveData1.xRot, saveData1.yRot, saveData1.zRot, saveData1.wRot));
+        characterController.enabled = true;
+
+        curStamina = saveData1.currentStamina;
+        staminaTimer = saveData1.staminaTimer;
+        staminaEnded = saveData1.staminaEnded;
+
+        blinkTimer = saveData1.blinkTimer;
+        blinkStrip = saveData1.blinkStrip;
+        isBlinking = saveData1.isBlinking;
+        inBlinkTimer = saveData1.blinkTimer;
+
+        for (int i = 0; i < saveData1.inventory.inv_item_id.Length; i++)
+            inventory[i] = saveData1.inventory.inv_item_id[i] == 0 ? null : (InventoryItem)SaveManager.instance.behaviours[saveData1.inventory.inv_item_id[i]];
     }
 }

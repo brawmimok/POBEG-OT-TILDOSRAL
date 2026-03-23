@@ -2,7 +2,9 @@ using UnityEngine.SceneManagement;
 using UnityEngine;
 using TMPro;
 using System.Collections;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
@@ -48,11 +50,6 @@ public class MainMenu : MonoBehaviour
         }
     }
 
-    public void LoadScene(string sceneName)
-    {
-        SceneManager.LoadScene(sceneName);
-    }
-
     public void StartGame()
     {
         if (isLoading) return;
@@ -69,10 +66,7 @@ public class MainMenu : MonoBehaviour
 
         while (!operation.isDone)
         {
-            float progress = Mathf.Clamp01(operation.progress / 0.9f);
-            int percentage = Mathf.RoundToInt(progress * 100f);
-            loadingText.text = "LOADING - " + percentage + " %";
-
+            loadingText.text = "LOADING - " + (int)(operation.progress * 100f) + " %";
             if (operation.progress >= 0.9f)
             {
                 loadingText.text = "LOADING - 100 %";

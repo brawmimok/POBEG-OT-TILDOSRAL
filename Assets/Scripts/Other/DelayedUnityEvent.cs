@@ -16,25 +16,54 @@ namespace UnityEngine.Events
     [Serializable]
     public class DelayedUnityEvent
     {
+        [Serializable]
+        public class DelayedSaveData : PepusBehaviour.SaveData
+        {
+            public float timeElapsed;
+        }
         [SerializeField, HideInInspector]
         private List<DelayActionPair> items = new List<DelayActionPair>();
 
         public List<DelayActionPair> Items => items;
 
-        private static readonly Dictionary<float, WaitForSeconds> _waitCache = new Dictionary<float, WaitForSeconds>() { [0f] = new WaitForSeconds(0f) };
+        [NonSerialized] public float timeElapsed;
+        private float maxTimeElapsed;
+
+        private static readonly Dictionary<float, WaitForSeconds> _waitCache = new Dictionary<float, WaitForSeconds>()
+        {
+            [0f] = new WaitForSeconds(0f),
+            [0.5f] = new WaitForSeconds(0.5f),
+            [1f] = new WaitForSeconds(1f)
+        };
+        IEnumerator _startTimer()
+        {
+            while (timeElapsed < maxTimeElapsed)
+            {
+                timeElapsed += Time.deltaTime;
+                yield return null;
+            }
+            timeElapsed = 0f;
+            coroutine = null;
+        }
+        private Coroutine coroutine;
         public void Invoke()
         {
-            foreach (var item in items)
-            {
+            List<DelayActionPair> delayActionPairs = new List<DelayActionPair>(items);
+            if (timeElapsed > 0f)
+                foreach (var item in delayActionPairs)
+                    if (item.delay < timeElapsed) delayActionPairs.Remove(item);
+                    else item.delay = item.delay - timeElapsed;
+
+            if (coroutine == null)
+                coroutine = MainMechanics.instance.StartCoroutine(_startTimer());
+
+            foreach (var item in delayActionPairs)
                 MainMechanics.instance.StartCoroutine(InvokeDelay(item));
-            }
         }
         private IEnumerator InvokeDelay(DelayActionPair delayActionPair)
         {
             if (!_waitCache.TryGetValue(delayActionPair.delay, out var value))
-            {
                 _waitCache.Add(delayActionPair.delay, new WaitForSeconds(delayActionPair.delay));
-            }
             yield return _waitCache[delayActionPair.delay];
             delayActionPair.action.Invoke();
         }
