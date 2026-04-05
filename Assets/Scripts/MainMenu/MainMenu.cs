@@ -15,7 +15,11 @@ public class MainMenu : MonoBehaviour
     [SerializeField]
     private AudioSource soundWhenStartingScene;
     private static bool _soundWhenStartingSceneHasPlayed = false;
-
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetStatic()
+    {
+        _soundWhenStartingSceneHasPlayed = false;
+    }
     [Space]
     [SerializeField]
     private AudioSource soundWhenExitingGame;

@@ -481,7 +481,9 @@ public class Player : PepusBehaviour
     public bool PlayerIsWatching(Collider collider, Collider meshcollider)
     {
         Plane[] planes = GeometryUtility.CalculateFrustumPlanes(playerCamera);
+        print(1);
         if (!GeometryUtility.TestPlanesAABB(planes, meshcollider.bounds)) return false;
+        print(2);
         Bounds b = collider.bounds;
         Vector3[] pointsToCheck = {
             b.center,

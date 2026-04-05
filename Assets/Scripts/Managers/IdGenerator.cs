@@ -13,8 +13,14 @@ public class IdGenerator : ScriptableObject
             return _instance;
         }
     }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetStatic()
+    {
+        _instance = null;
+    }
+
     public ulong lastId;
-    
     public ulong GetNextId()
     {
         lastId++;

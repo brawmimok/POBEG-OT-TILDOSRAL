@@ -25,12 +25,18 @@ public class SaveManager : MonoBehaviour
     static public SaveManager instance;
     static public string saveName = string.Empty;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetStatic()
+    {
+        isLoad = false;
+        saveName = string.Empty;
+    }
+
     public Dictionary<ulong, PepusBehaviour> behaviours = new();
 
     private void Awake()
     {
-        if (instance == null)
-            instance = this;
+        instance = this;
     }
     private void Start()
     {

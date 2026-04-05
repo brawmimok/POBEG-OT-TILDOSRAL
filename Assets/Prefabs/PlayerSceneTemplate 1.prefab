@@ -13856,7 +13856,7 @@ MonoBehaviour:
     m_Bits: 1
   layerMaskNpcRaycast:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 65
 --- !u!143 &3852503788707022481
 CharacterController:
   m_ObjectHideFlags: 0

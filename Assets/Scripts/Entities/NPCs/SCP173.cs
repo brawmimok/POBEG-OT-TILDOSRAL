@@ -95,8 +95,8 @@ public class SCP173 : PepusBehaviour
             bool playerIsWatchingPast = playerIsWatching;
             playerIsWatching = targetPlayer.PlayerIsWatching(ownCollider, ownMeshCollider);
             playerIsWatching &= !targetPlayer.isBlinking;
-
             if ((playerIsWatching && !noticedByPlayer) ||
+
                 (playerIsWatchingPast != playerIsWatching &&
                 Vector3.Distance(targetPlayer.transform.position, transform.position) <= triggerSoundRange)
                 )

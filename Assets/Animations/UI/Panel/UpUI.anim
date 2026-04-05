@@ -121,8 +121,8 @@ AnimationClip:
   m_HasMotionFloatCurves: 0
   m_Events:
   - time: 49
-    functionName: LoadScene
-    data: MainMenu
+    functionName: CreditsExit
+    data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0

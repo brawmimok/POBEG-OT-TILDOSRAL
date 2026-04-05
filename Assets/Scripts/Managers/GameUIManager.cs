@@ -38,8 +38,7 @@ public class GameUIManager : MonoBehaviour
 
     private void Awake()
     {
-        if (instance == null)
-            instance = this;
+        instance = this;
     }
 
     private void Update()
@@ -122,6 +121,8 @@ public class GameUIManager : MonoBehaviour
         pauseMenuUI.blocksRaycasts = true;
         _isPaused = true;
         Time.timeScale = 0f;
+        foreach (var item in FindObjectsByType<AudioSource>())
+            item.Pause();
     }
 
     private void ResumeGame()
@@ -134,6 +135,8 @@ public class GameUIManager : MonoBehaviour
         pauseMenuUI.blocksRaycasts = false;
         Time.timeScale = 1f;
         _isPaused = false;
+        foreach (var item in FindObjectsByType<AudioSource>())
+            item.UnPause();
     }
 
     private void ShowDeathMenu()
