@@ -7,19 +7,11 @@ public class PlayerUseTrigger : MonoBehaviour
     {
         if (other.gameObject.isStatic) return;
         if (!other.CompareTag(nameof(Usable))) return;
-        foreach (var item in other.GetComponentsInParent<Component>())
-        {
-            if (item.GetType().IsSubclassOf(typeof(Usable)))
-            {
-                //print(item);
-                player.useList.Add(other, (Usable)item);
-                return;
-            }
-        }
+        
+        var usableComponent = other.GetComponentInParent<Usable>();
+        if (usableComponent != null)
+            player.useList.Add(other, usableComponent);
     }
 
-    private void OnTriggerExit(Collider other)
-    {
-        player.useList.Remove(other);
-    }
+    private void OnTriggerExit(Collider other) => player.useList.Remove(other);
 }

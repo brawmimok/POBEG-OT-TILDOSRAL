@@ -118,9 +118,8 @@ public class Player : PepusBehaviour
 
     //[SerializeField] private GameObject playerModel;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
         characterController = GetComponent<CharacterController>();
     }
     private void Start()
@@ -356,12 +355,10 @@ public class Player : PepusBehaviour
         if (Input.GetKeyDown(KeyCode.F5))
         {
             GameUIManager.instance.ShowText("Игра сохранена", 3f);
-            SaveManager.instance.Save();
         }
         if (Input.GetKeyDown(KeyCode.F7))
         {
             GameUIManager.instance.ShowText("Игра Загружена", 3f);
-            SaveManager.instance.LoadSave();
         }
     }
     #region USING_CODE
@@ -541,94 +538,5 @@ public class Player : PepusBehaviour
                 if (hit.collider == collider)
                     return true;
         return false;
-    }
-    // Сохранения
-    [Serializable]
-    public class InventorySaveDataWrap
-    {
-        public ulong[] inv_item_id;
-        //public InventorySaveDataWrap(int[] arr)
-        //{
-        //    inv_item_id = new int[arr.Length];
-        //    for (int i = 0; i < arr.Length; i++)
-        //        inv_item_id[i] = arr[i];
-        //}
-        public InventorySaveDataWrap(InventoryItem[] arr)
-        {
-            inv_item_id = new ulong[arr.Length];
-            for (int i = 0; i < arr.Length; i++)
-                inv_item_id[i] = arr[i] == null ? 0 : arr[i].Id;
-        }
-    }
-    [Serializable]
-    public class PlayerSaveData : SaveData
-    {
-        public float x, y, z;
-
-        public float wRot, xRot, yRot, zRot;
-
-        public InventorySaveDataWrap inventory;
-
-        public float currentStamina;
-        public float staminaTimer;
-        public bool staminaEnded;
-
-        public float blinkTimer;
-        public float inBlinkTimer;
-        public float blinkStrip;
-        public bool isBlinking;
-    }
-    public override void OnSave()
-    {
-        saveData = new PlayerSaveData()
-        {
-            x = transform.position.x,
-            y = transform.position.y,
-            z = transform.position.z,
-
-            wRot = transform.rotation.w,
-            xRot = transform.rotation.x,
-            yRot = transform.rotation.y,
-            zRot = transform.rotation.z,
-
-            inventory = new(inventory),
-
-            currentStamina = curStamina,
-            staminaTimer = staminaTimer,
-            staminaEnded = staminaEnded,
-
-            blinkTimer = blinkTimer,
-            blinkStrip = blinkStrip,
-            isBlinking = isBlinking,
-            inBlinkTimer = inBlinkTimer,
-
-            active = gameObject.activeInHierarchy,
-            id = Id
-        };
-    }
-    public override void OnLoad(SaveData saveData)
-    {
-        base.OnLoad(saveData);
-        PlayerSaveData saveData1 = (PlayerSaveData)saveData;
-
-        GameUIManager.instance.UndisplayItemOnScreen();
-
-        characterController.enabled = false;
-        transform.SetPositionAndRotation(
-            new Vector3(saveData1.x, saveData1.y, saveData1.z),
-            new Quaternion(saveData1.xRot, saveData1.yRot, saveData1.zRot, saveData1.wRot));
-        characterController.enabled = true;
-
-        curStamina = saveData1.currentStamina;
-        staminaTimer = saveData1.staminaTimer;
-        staminaEnded = saveData1.staminaEnded;
-
-        blinkTimer = saveData1.blinkTimer;
-        blinkStrip = saveData1.blinkStrip;
-        isBlinking = saveData1.isBlinking;
-        inBlinkTimer = saveData1.blinkTimer;
-
-        for (int i = 0; i < saveData1.inventory.inv_item_id.Length; i++)
-            inventory[i] = saveData1.inventory.inv_item_id[i] == 0 ? null : (InventoryItem)SaveManager.instance.behaviours[saveData1.inventory.inv_item_id[i]];
     }
 }

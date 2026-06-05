@@ -99,40 +99,4 @@ public class Door : PepusBehaviour
         transform.position = destination;
         isMoving = false;
     }
-    [Serializable]
-    public class DoorSaveData : SaveData
-    {
-        public bool startDoorOpened;
-    }
-    public override void OnSave()
-    {
-        saveData = new DoorSaveData()
-        {
-            startDoorOpened = isDoorOpened,
-
-            active = gameObject.activeInHierarchy,
-            id = Id
-        };
-    }
-    public override void OnLoad(SaveData saveData)
-    {
-        base.OnLoad(saveData);
-        DoorSaveData saveData1 = (DoorSaveData)saveData;
-
-        StopAllCoroutines();
-        isMoving = false;
-
-        startDoorOpen = saveData1.startDoorOpened;
-        if (startDoorOpen)
-        {
-            navMeshLink.area = walkableAreaType;
-            transform.position = targetPosition;
-            isDoorOpened = true;
-        }
-        else
-        {
-            transform.position = initialPosition;
-        }
-        navMeshLink.enabled = NpcCanOpen || isDoorOpened;
-    }
 }

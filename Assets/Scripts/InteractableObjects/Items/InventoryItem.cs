@@ -14,9 +14,8 @@ public abstract class InventoryItem : Usable
     private Rigidbody rb;
     private Collider coll;
     private MeshRenderer mr;
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
         rb = GetComponent<Rigidbody>();
         coll = GetComponent<Collider>();
         mr = GetComponent<MeshRenderer>();
@@ -49,7 +48,7 @@ public abstract class InventoryItem : Usable
         MainMechanics.instance.uiAudio.PlayOneShot(useSound);
         GameUIManager.instance.CloseInventory();
     }
-    public virtual void DropItem(Player activator) // Лучше не заменять (А я ща нахуй всё удалю, а не заменю)
+    public virtual void DropItem(Player activator) // Лучше не заменять (хоть и стоит virtual, нужно быть аккуратнее) (А я ща нахуй всё удалю, а не заменю)
     {
         MainMechanics.instance.uiAudio.PlayOneShot(putOutSound);
 
@@ -62,48 +61,5 @@ public abstract class InventoryItem : Usable
         activator.inventory[slotIndex] = null;
         GameUIManager.instance.CloseInventory();
         slotIndex = -1;
-    }
-    [Serializable]
-    public class InvItemSaveData : SaveData
-    {
-        public bool mr;
-        public bool coll;
-        public bool rb;
-
-        public float x, y, z;
-
-        public float wRot, xRot, yRot, zRot;
-    }
-    public override void OnSave()
-    {
-        saveData = new InvItemSaveData()
-        {
-            x = transform.position.x,
-            y = transform.position.y,
-            z = transform.position.z,
-
-            wRot = transform.rotation.w,
-            xRot = transform.rotation.x,
-            yRot = transform.rotation.y,
-            zRot = transform.rotation.z,
-
-            mr = mr.enabled,
-            coll = coll.enabled,
-            rb = rb.useGravity,
-
-            active = gameObject.activeInHierarchy,
-            id = Id
-        };
-    }
-    public override void OnLoad(SaveData saveData)
-    {
-        base.OnLoad(saveData);
-        InvItemSaveData saveData1 = (InvItemSaveData)saveData;
-
-        transform.position = new Vector3(saveData1.x, saveData1.y, saveData1.z);
-        transform.rotation = new Quaternion(saveData1.xRot, saveData1.yRot, saveData1.zRot, saveData1.wRot);
-        mr.enabled = saveData1.mr;
-        coll.enabled = saveData1.coll;
-        rb.useGravity = saveData1.rb;
     }
 }

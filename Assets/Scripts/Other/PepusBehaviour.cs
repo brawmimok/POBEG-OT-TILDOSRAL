@@ -1,56 +1,56 @@
 using UnityEngine;
-using System;
+using UnityEngine.AI;
 
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-public class PepusBehaviour : MonoBehaviour
+public abstract class PepusBehaviour : MonoBehaviour
 {
-    [SerializeField] private ulong _id;
-    public ulong Id => _id;
-    [NonSerialized] public SaveData saveData;
-    private void OnValidate()
-    {
-        if (!Application.isPlaying && _id == 0
-#if UNITY_EDITOR
-            && !PrefabUtility.IsPartOfPrefabAsset(this)
-#endif
-            )
-        {
-            if (IdGenerator.Instance != null)
-            {
-                _id = IdGenerator.Instance.GetNextId();
-#if UNITY_EDITOR
-                EditorUtility.SetDirty(this);
-#endif
-            }
-            else
-            {
-                throw new("IdGenerator не существует!");
-            }
-        }
-    }
+    [Saveable][HideInInspector] public Vector3 savedPosition;
+    [Saveable][HideInInspector] public Quaternion savedRotation;
+    [Saveable][HideInInspector] public bool savedActiveState;
 
-    protected virtual void Awake()
+    public virtual void OnBeforeSave()
     {
-        if (_id == 0 && IdGenerator.Instance != null)
+        savedPosition = transform.position;
+        savedRotation = transform.rotation;
+        savedActiveState = gameObject.activeSelf;
+    }
+    public virtual void OnAfterLoad()
+    {
+        CharacterController characterController = gameObject.GetComponent<CharacterController>();
+        NavMeshAgent navMeshAgent = gameObject.GetComponent<NavMeshAgent>();
+        Rigidbody rigidbody = gameObject.GetComponent<Rigidbody>();
+
+        if (characterController != null)
         {
-            _id = IdGenerator.Instance.GetNextId();
+            bool cCState = characterController.enabled;
+            characterController.enabled = false;
+
+            transform.position = savedPosition;
+            transform.rotation = savedRotation;
+
+            characterController.enabled = cCState;
         }
-        SaveManager.instance.behaviours.Add(Id, this);
-    }
-    [Serializable]
-    public class SaveData
-    {
-        public ulong id;
-        public bool active;
-    }
-    virtual public void OnSave()
-    {
-        saveData = new() { active = gameObject.activeInHierarchy, id = Id };
-    }
-    virtual public void OnLoad(SaveData saveData)
-    {
-        gameObject.SetActive(saveData.active);
+        else if (navMeshAgent != null)
+        {
+            if (!navMeshAgent.Warp(savedPosition))
+                transform.position = savedPosition;
+            transform.rotation = savedRotation;
+        }
+        else if (rigidbody != null)
+        {
+            bool isKinematic = rigidbody.isKinematic;
+            rigidbody.isKinematic = true;
+
+            transform.position = savedPosition;
+            transform.rotation = savedRotation;
+
+            rigidbody.isKinematic = isKinematic;
+        }
+        else
+        {
+            transform.position = savedPosition;
+            transform.rotation = savedRotation;
+        }
+
+        gameObject.SetActive(savedActiveState);
     }
 }

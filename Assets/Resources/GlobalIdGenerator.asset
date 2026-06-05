@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8d059d135b597843ae06cadaad2c9f0, type: 3}
   m_Name: GlobalIdGenerator
   m_EditorClassIdentifier: Assembly-CSharp::IdGenerator
-  lastId: 4608
+  lastId: 4832

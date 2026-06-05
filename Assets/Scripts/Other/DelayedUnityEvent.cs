@@ -16,11 +16,6 @@ namespace UnityEngine.Events
     [Serializable]
     public class DelayedUnityEvent
     {
-        [Serializable]
-        public class DelayedSaveData : PepusBehaviour.SaveData
-        {
-            public float timeElapsed;
-        }
         [SerializeField, HideInInspector]
         private List<DelayActionPair> items = new List<DelayActionPair>();
 
@@ -32,7 +27,9 @@ namespace UnityEngine.Events
         private static readonly Dictionary<float, WaitForSeconds> _waitCache = new Dictionary<float, WaitForSeconds>()
         {
             [0f] = new WaitForSeconds(0f),
+            [0.25f] = new WaitForSeconds(0f),
             [0.5f] = new WaitForSeconds(0.5f),
+            [0.75f] = new WaitForSeconds(0f),
             [1f] = new WaitForSeconds(1f)
         };
         IEnumerator _startTimer()

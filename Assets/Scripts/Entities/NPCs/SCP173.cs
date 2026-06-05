@@ -60,10 +60,6 @@ public class SCP173 : PepusBehaviour
 
     private const int areaMaskEverything = -1;
     private const int areaMaskAfterLimit = 7;
-    protected override void Awake()
-    {
-        base.Awake();
-    }
     private void Start()
     {
         disappearTimerWorking = true;
@@ -212,64 +208,5 @@ public class SCP173 : PepusBehaviour
             noticedByPlayer = false;
             targetPlayer = null;
         }
-    }
-    public class SCP173SaveData : SaveData
-    {
-        public float x;
-        public float y;
-        public float z;
-
-        public float wRot;
-        public float xRot;
-        public float yRot;
-        public float zRot;
-
-        public int maxDoorsOpen;
-        public bool noticedByPlayer;
-        public ulong targetPlayerId;
-
-        public bool disappearTimerWorking;
-        public float disappearTimer;
-    }
-    public override void OnSave()
-    {
-        saveData = new SCP173SaveData()
-        {
-            x = transform.position.x,
-            y = transform.position.y,
-            z = transform.position.z,
-
-            wRot = transform.rotation.w,
-            xRot = transform.rotation.x,
-            yRot = transform.rotation.y,
-            zRot = transform.rotation.z,
-
-            maxDoorsOpen = maxDoorsCanOpen,
-            noticedByPlayer = noticedByPlayer,
-            targetPlayerId = targetPlayer == null ? 0 : targetPlayer.Id,
-
-            disappearTimerWorking = disappearTimerWorking,
-            disappearTimer = disappearTimer,
-
-            active = gameObject.activeInHierarchy,
-            id = Id
-        };
-    }
-    public override void OnLoad(SaveData saveData)
-    {
-        base.OnLoad(saveData);
-        SCP173SaveData saveData1 = (SCP173SaveData)saveData;
-
-        transform.SetPositionAndRotation(
-            new Vector3(saveData1.x, saveData1.y, saveData1.z),
-            new Quaternion(saveData1.xRot, saveData1.yRot, saveData1.zRot, saveData1.wRot));
-        
-        maxDoorsCanOpen = saveData1.maxDoorsOpen;
-        noticedByPlayer = saveData1.noticedByPlayer;
-        var targetPlayer1 = SaveManager.instance.behaviours[saveData1.targetPlayerId];
-        targetPlayer = targetPlayer1 == null ? null : (Player)targetPlayer1;
-        
-        disappearTimerWorking = saveData1.disappearTimerWorking;
-        disappearTimer = saveData1.disappearTimer;
     }
 }

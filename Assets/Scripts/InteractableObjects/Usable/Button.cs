@@ -23,12 +23,10 @@ public class Button : LockableUsable
     private float lastPressTime;
     private float lastPlayTime;
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
         if (warningSound != null)
             resetAudioTime = warningSound.length;
-
     }
     override public void Use(Player player)
     {
@@ -54,31 +52,5 @@ public class Button : LockableUsable
         }
 
         GameUIManager.instance.ShowText(keyCardLevel <= -1 ? string.Format(brokenButton, reason) : string.Format(keyCardInvalidLevelText, keyCardLevel));
-    }
-    // Υσι υσι υσι
-    public class ButtonSaveData : DelayedSaveData
-    {
-        public bool locked;
-    }
-    public override void OnSave()
-    {
-        saveData = new ButtonSaveData()
-        {
-            timeElapsed = buttonEvent.timeElapsed,
-            locked = locked,
-
-            active = gameObject.activeInHierarchy,
-            id = Id
-        };
-    }
-    public override void OnLoad(SaveData saveData)
-    {
-        base.OnLoad(saveData);
-        ButtonSaveData saveData1 = (ButtonSaveData)saveData;
-        locked = saveData1.locked;
-
-        buttonEvent.timeElapsed = saveData1.timeElapsed;
-        if (buttonEvent.timeElapsed > 0f)
-            buttonEvent.Invoke();
     }
 }

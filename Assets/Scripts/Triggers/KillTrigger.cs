@@ -5,10 +5,6 @@ public class KillZone : PepusBehaviour
     [Header("Kill Zone Settings")]
     [SerializeField] private AudioClip deathSound;
     [SerializeField] private string deathReason;
-    protected override void Awake()
-    {
-        base.Awake();
-    }
     private void OnTriggerEnter(Collider other)
     {
         if (!other.CompareTag("Player")) return;
